@@ -30,6 +30,8 @@ double cp_double_2(double cpm, int atk, int def, int hp);
 long double cp_longdouble(double cpm, int atk, int def, int hp);
 void check_known_cps();
 void check_specific_cp(double cmp, const char *name, int truecp, int atk, int def, int hp, int a_iv, int d_iv, int h_iv);
+float adjacent_float(float f, int n);
+
 
 int main(void) {
 
@@ -43,9 +45,9 @@ int main(void) {
     double ramp_cp_d;
 
     cw = 0x27f; /* Double precision */
-    _FPU_SETCW(cw);
+    /*_FPU_SETCW(cw);
     _FPU_GETCW(cw);
-    fprintf(stderr, "FPU CW at start: 0x%x\n", cw);
+    fprintf(stderr, "FPU CW at start: 0x%x\n", cw);*/
 
     check_known_cps();
     exit(0);
@@ -182,6 +184,7 @@ double cp_double(double cpm, int atk, int def, int hp) {
      */
     double lcpm = (double)((float)cpm);
 
+
     /* Compute each stat as a doubles */
     double a = (double)atk * lcpm;
     double d = (double)def * lcpm;
@@ -218,6 +221,7 @@ double cp_double_2(double cpm, int atk, int def, int hp) {
     double h = (double)hp * cpm;*/
 
     double lcpm = (double)((float)cpm);
+    /*double lcpm = (double)(adjacent_float((float)cpm, 1));*/
 
     /*double a = ((double)atk * lcpm);
     double d = ((double)def * lcpm);
@@ -231,4 +235,14 @@ double cp_double_2(double cpm, int atk, int def, int hp) {
     cp = ((double)atk * sqrt((double)(def * hp)) * lcpm * lcpm) / 10.0;
 
     return cp;
+}
+
+
+float adjacent_float(float f, int n) {
+    union fu fu = {.f = f};
+
+    /* Adjust +/- n steps */
+    fu.u += n;
+
+    return fu.f;
 }
