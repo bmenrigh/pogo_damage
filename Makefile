@@ -1,18 +1,19 @@
 CC=gcc
 
-CFLAGS=-std=c99 -Wall -Wextra -march=native -O0 -frounding-math
+CFLAGS=-std=c99 -Wall -Wextra -march=native -O0
+#CFLAGS=-std=c99 -Wall -Wextra -march=native -O0 -frounding-math
 LIBS=-lm
 
-main: damage
+main: cp
 
-damage: damage.o
-	$(CC) $(CFLAGS) -o damage damage.c $(LIBS)
+cp: cp.o
+	$(CC) $(CFLAGS) -o cp cp.c $(LIBS)
 
-damage.o: damage.c
-	$(CC) $(CFLAGS) -c damage.c
+cp.o: cp.c
+	$(CC) $(CFLAGS) -c cp.c
 
 clean:
-	rm -f damage
+	rm -f cp
 	rm -f *.o
 	rm -f *~
 	rm -f \#*
