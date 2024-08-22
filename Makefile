@@ -1,6 +1,6 @@
 CC=gcc
 
-CFLAGS=-std=c99 -Wall -Wextra -march=native -O0
+CFLAGS=-std=c99 -Wall -Wextra -march=native -O0 -g
 #CFLAGS=-std=c99 -Wall -Wextra -march=native -O0 -frounding-math
 LIBS=-lm
 

@@ -5,7 +5,7 @@
 #include <math.h>
 #include <assert.h>
 #include <fenv.h>
-#include <fpu_control.h>
+/*#include <fpu_control.h>*/
 
 #include "pokemon_data.h"
 
@@ -30,6 +30,8 @@ uint64_t d_to_bin(double d);
 double get_cpm(int level, int half);
 long double get_cpm_longdouble(int level, int half);
 double get_cpm2(int level, int half);
+
+int compare_cp_calc_whole_level(int l, int atk, int def, int hp);
 double cp_double(double cpm, int atk, int def, int hp);
 double cp_double_2(double cpm, int atk, int def, int hp);
 long double cp_longdouble(double cpm, int atk, int def, int hp);
@@ -70,17 +72,19 @@ int main(void) {
     }
     exit(0);*/
 
-    fpu_control_t cw;
-    cw = 0x27f; /* Double precision */
-    /*_FPU_SETCW(cw);*/
-    _FPU_GETCW(cw);
-    fprintf(stderr, "FPU CW at start: 0x%x\n", cw);
+    /* fpu_control_t cw; */
+    /* cw = 0x27f; /\* Double precision *\/ */
+    /* /\*_FPU_SETCW(cw);*\/ */
+    /* _FPU_GETCW(cw); */
+    /* fprintf(stderr, "FPU CW at start: 0x%x\n", cw); */
 
     for (int i = 1; i < 50; i++) {
         double cpm_1 = get_cpm(i, 1);
         double cpm_2 = get_cpm2(i, 1);
         float cpm_f1 = (float)cpm_1;
         float cpm_f2 = (float)cpm_2;
+        (void)cpm_f1;
+        (void)cpm_f2;
 
         /*if (cpm_1 != cpm_2) {
             fprintf(stderr, "Mismatch in double CPM values at level %d.5: (%.20f) vs (%.20f):\n",
@@ -89,12 +93,12 @@ int main(void) {
             print_double(cpm_2, "cpm_2");
             }*/
 
-        if (cpm_f1 != cpm_f2) {
-            fprintf(stderr, "Mismatch in float CPM values at level %d.5: (%.20f) vs (%.20f):\n",
-                    i, cpm_f1, cpm_f2);
-            print_float(cpm_f1, "cpm_f1");
-            print_float(cpm_f2, "cpm_f2");
-        }
+        /*  if (cpm_f1 != cpm_f2) { */
+        /*     fprintf(stderr, "Mismatch in float CPM values at level %d.5: (%.20f) vs (%.20f):\n", */
+        /*             i, cpm_f1, cpm_f2); */
+        /*     print_float(cpm_f1, "cpm_f1"); */
+        /*     print_float(cpm_f2, "cpm_f2"); */
+        /* } */
 
         long double cpm_ld = get_cpm_longdouble(i, 1);
         long double cpm_ld_f = (long double)((float)cpm_ld);
@@ -123,7 +127,7 @@ int main(void) {
 
 
     check_known_cps(&get_cpm);
-    exit(0);
+      exit(0);
 
     /*double cpm385;
     double cpm345;
@@ -139,9 +143,9 @@ int main(void) {
     print_double(cpm385, "CPM 38.5");
     print_float((float)cpm385, "CPM 38.5");*/
 
-    double cpm345 = get_cpm(34, 1);
-    print_double(cpm345, "CPM 34.5");
-    print_float((float)cpm345, "CPM 34.5");
+    /* double cpm345 = get_cpm(34, 1); */
+    /* print_double(cpm345, "CPM 34.5"); */
+    /* print_float((float)cpm345, "CPM 34.5"); */
 
     /*fprintf(stderr, "Level 1.5 CPM\n");
     cpm15 = get_cpm(1, 1);
@@ -153,7 +157,7 @@ int main(void) {
     /*fprintf(stderr, "Rampardos CP using float CPM\n");
       print_double(ramp_cp_f);*/
 
-    exit(0);
+    /*exit(0);*/
     for (int l = 1; l <= 50; l++) {
         for (int half = 0; half <= 1; half++) {
             double hCPM, hCPM_2;
@@ -182,6 +186,14 @@ int main(void) {
                             int d = p_stats[p][1] + d_iv;
                             int h = p_stats[p][2] + h_iv;
 
+                            if (half == 0) {
+                                int cp_cmp = compare_cp_calc_whole_level(l, a, d, h);
+                                if (cp_cmp != 0) {
+                                    fprintf(stderr, "Mismatch for %s %d/%d/%d\n", p_names[p], a_iv, d_iv, h_iv);
+                                }
+                                (void)cp_cmp;
+                            }
+
                             long double cp_ld = cp_longdouble((double)((float)hCPM), a, d, h);
                             double cp_d = cp_double(hCPM, a, d, h);
                             double cp_d2 = cp_double(hCPM, a, d, h);
@@ -206,8 +218,8 @@ int main(void) {
                             }
 
                             if ((int)floor(cp_d) != (int)floor(cp_d2)) {
-                                fprintf(stderr, "Found CP mismatch for %s at level %d%s for %d/%d/%d: %d (d) vs %d (ds) CP\n",
-                                        p_names[p], l, (half == 0)? "" : ".5", a_iv, d_iv, h_iv, (int)floor(cp_d), (int)floor(cp_d2));
+                                /* fprintf(stderr, "Found CP mismatch for %s at level %d%s for %d/%d/%d: %d (d) vs %d (ds) CP\n", */
+                                /*         p_names[p], l, (half == 0)? "" : ".5", a_iv, d_iv, h_iv, (int)floor(cp_d), (int)floor(cp_d2)); */
                             }
                         }
                     }
@@ -216,8 +228,8 @@ int main(void) {
         }
     }
 
-    _FPU_GETCW(cw);
-    fprintf(stderr, "FPU CW at exit: 0x%x\n", cw);
+    /* _FPU_GETCW(cw); */
+    /* fprintf(stderr, "FPU CW at exit: 0x%x\n", cw); */
 
     return 0;
 }
@@ -245,7 +257,7 @@ void check_known_cps(double (*cpm_func)(int,int)) {
     check_specific_cp(cpm_func, 16, 1, "Dewgong", 892, 139, 177, 207, 9, 13, 14);
     check_specific_cp(cpm_func, 16, 1, "Koffing", 528, 119, 141, 120, 11, 10, 6);
     check_specific_cp(cpm_func, 16, 1, "Spheal", 392, 95, 90, 172, 12, 0, 0);
-    check_specific_cp(cpm_func, 17, 1, "Whishcash", 1037, 151, 141, 242, 15, 15, 15);
+    check_specific_cp(cpm_func, 17, 1, "Whiscash", 1037, 151, 141, 242, 15, 15, 15);
     check_specific_cp(cpm_func, 18, 1, "Eevee", 482, 104, 114, 146, 2, 10, 7);
     check_specific_cp(cpm_func, 18, 1, "Spheal", 455, 95, 90, 172, 7, 12, 7);
     check_specific_cp(cpm_func, 19, 1, "Stantler", 1116, 192, 131, 177, 9, 3, 13);
@@ -275,7 +287,7 @@ void check_known_cps(double (*cpm_func)(int,int)) {
     check_specific_cp(cpm_func, 32, 1, "Donphan", 2691, 214, 185, 207, 15, 15, 15);
     check_specific_cp(cpm_func, 33, 1, "Crobat", 2401, 194, 178, 198, 15, 15, 15);
     check_specific_cp(cpm_func, 34, 1, "Swadloon", 1263, 115, 146, 162, 15, 15, 15);
-    check_specific_cp(cpm_func, 34, 1, "Ryhperior", 3434, 241, 190, 251, 15, 15, 14);
+    check_specific_cp(cpm_func, 34, 1, "Rhyperior", 3434, 241, 190, 251, 15, 15, 14);
     check_specific_cp(cpm_func, 35, 1, "Dewgong", 1697, 139, 177, 207, 4, 13, 10);
     check_specific_cp(cpm_func, 36, 1, "Cryogonal", 2336, 190, 218, 190, 3, 1, 0);
     check_specific_cp(cpm_func, 37, 1, "Mothim", 1750, 185, 98, 172, 15, 15, 15);
@@ -288,7 +300,7 @@ void check_known_cps(double (*cpm_func)(int,int)) {
     check_specific_cp(cpm_func, 40, 1, "Mankey", 1050, 148, 82, 120, 12, 4, 7);
     check_specific_cp(cpm_func, 41, 1, "Darmanitan", 3009, 263, 114, 233, 9, 14, 3);
     check_specific_cp(cpm_func, 41, 1, "Spheal", 863, 95, 90, 172, 7, 5, 14);
-    check_specific_cp(cpm_func, 42, 1, "Darmamaka", 1399, 153, 86, 172, 10, 10, 13);
+    check_specific_cp(cpm_func, 42, 1, "Darmumaka", 1399, 153, 86, 172, 10, 10, 13);
     check_specific_cp(cpm_func, 42, 1, "Spheal", 916, 95, 90, 172, 11, 11, 6);
     check_specific_cp(cpm_func, 43, 1, "Stantler", 2089, 192, 131, 177, 10, 7, 5);
     check_specific_cp(cpm_func, 43, 1, "Bunnelby", 481, 68, 72, 116, 9, 7, 0);
@@ -411,19 +423,20 @@ void check_known_cps(double (*cpm_func)(int,int)) {
 void check_specific_cp(double (*cpm_func)(int,int), int l, int half, const char *name, int truecp, int atk, int def, int hp, int a_iv, int d_iv, int h_iv) {
 
     if (half == 1) {
-        /*add_true_cp(l, half, name, truecp, atk, def, hp, a_iv, d_iv, h_iv);*/
+        add_true_cp(l, half, name, truecp, atk, def, hp, a_iv, d_iv, h_iv);
     }
 
     double cp;
     double cp_l, cp_h;
     int foundcp;
     if (half == 0) {
-        cp = cp_double((*cpm_func)(l, 0), atk + a_iv, def + d_iv, hp + h_iv);
+        cp = cp_double_2((*cpm_func)(l, 0), atk + a_iv, def + d_iv, hp + h_iv);
     } else {
-        cp_l = cp_double((*cpm_func)(l, 0), atk + a_iv, def + d_iv, hp + h_iv);
-        cp_h = cp_double((*cpm_func)(l + 1, 0), atk + a_iv, def + d_iv, hp + h_iv);
+        cp_l = cp_double_2((*cpm_func)(l, 0), atk + a_iv, def + d_iv, hp + h_iv);
+        cp_h = cp_double_2((*cpm_func)(l + 1, 0), atk + a_iv, def + d_iv, hp + h_iv);
 
-        cp = ceil((floor(cp_l) + floor(cp_h)) / 2.0);
+        /*cp = ceil((floor(cp_l) + floor(cp_h)) / 2.0);*/
+        cp = floor((cp_h + cp_l) / 2.0);
     }
     foundcp = (int)floor(cp);
     if (foundcp != truecp) {
@@ -448,6 +461,30 @@ void add_true_cp(int l, int half, const char *name, int truecp, int atk, int def
 
     double min_cpm = solve_cpm_from_cp(min_cp, atk + a_iv, def + d_iv, hp + h_iv);
     double max_cpm = solve_cpm_from_cp(max_cp, atk + a_iv, def + d_iv, hp + h_iv);
+
+    int min_down = 0;
+    while ((int)floor(cp_double_2(min_cpm, atk + a_iv, def + d_iv, hp + h_iv)) < truecp) {
+        min_cpm = adjacent_double(min_cpm, 1);
+        min_down--;
+    }
+    while ((int)floor(cp_double_2(adjacent_double(min_cpm, -1), atk + a_iv, def + d_iv, hp + h_iv)) == truecp) {
+        min_cpm = adjacent_double(min_cpm, -1);
+        min_down++;
+    }
+
+    int max_up = 0;
+    while ((int)floor(cp_double_2(max_cpm, atk + a_iv, def + d_iv, hp + h_iv)) > truecp) {
+        max_cpm = adjacent_double(max_cpm, -1);
+        max_up--;
+    }
+    while ((int)floor(cp_double_2(adjacent_double(max_cpm, 1), atk + a_iv, def + d_iv, hp + h_iv)) == truecp) {
+        max_cpm = adjacent_double(max_cpm, 1);
+        max_up++;
+    }
+
+    if ((min_down > 0) || (max_up > 0)) {
+        fprintf(stderr, "Expanded min/max by %d/%d\n", min_down, max_up);
+    }
 
     fprintf(stderr, "Computed CPM range [%.015f, %.015f]\n", min_cpm, max_cpm);
 
@@ -478,7 +515,7 @@ void add_true_cp(int l, int half, const char *name, int truecp, int atk, int def
 
 void print_double(double d, const char *s) {
 
-    fprintf(stderr, "Double %s: %.30f (0x%16lx)\n", s, d, d_to_bin(d));
+    fprintf(stderr, "Double %s: %.30f (0x%16llx)\n", s, d, d_to_bin(d));
     /*fprintf(stderr, "Double %s as float: %.30f (0x%8x)\n", s, (float)(d), f_to_bin((float)d));*/
 }
 
@@ -500,6 +537,8 @@ uint64_t d_to_bin(double d) {
 
     return du.u;
 }
+
+
 
 
 double get_cpm(int level, int half) {
@@ -617,6 +656,57 @@ long double get_cpm_longdouble(int level, int half) {
 }
 
 
+int compare_cp_calc_whole_level(int l, int atk, int def, int hp) {
+
+    double cpm = get_cpm(l, 0);
+
+    double d_a = (double)atk * cpm;
+    double d_d = (double)def * cpm;
+    double d_h = (double)hp * cpm;
+
+    float f_cpm = (float)cpm;
+
+    float f_a = (float)atk * f_cpm;
+    float f_d = (float)def * f_cpm;
+    float f_h = (float)hp * f_cpm;
+
+    /* Simple */
+    int cp_simple = (int)floor((d_a * sqrt(d_d) * sqrt(d_h)) / 10.0);
+
+    /* Combined square root */
+    int cp_dh_combo = (int)floor((d_a * sqrt(d_d * d_h)) / 10.0);
+
+    /* Factored cpm */
+    int cp_factored = (int)floor(((double)atk * sqrt((double)def * (double)hp) * (cpm * cpm)) / 10.0);
+
+    /* Zoé Cassiopée RE of arm32 */
+    /* Version 0.327.0 does (f32(atk_base * atk_iv) * cpm) * sqrtf((f32(def_base + def_iv) * cpm) * (f32(sta_base + sta_iv) * cpm)) * 0.1 (returns float) */
+    int cp_arm32 = (int)floor(f_a * sqrtf(f_d * f_h) * 0.1f);
+
+    /* Arm64 guess (based on arm32) */
+    int cp_arm64_guess = (int)floor(d_a * sqrt(d_d * d_h) * 0.1);
+
+    /*if ((cp_simple != cp_dh_combo) || (cp_simple != cp_factored) || (cp_simple != cp_arm32) || (cp_simple != cp_arm64_guess)) {*/
+    if ((cp_simple != cp_dh_combo) || (cp_simple != cp_factored) || (cp_simple != cp_arm64_guess)) {
+        fprintf(stderr, "CP calculation missmatch for %d/%d/%d @%d: "
+                "Simple: %d; "
+                "Combo DH: %d (%d); "
+                "Factored: %d (%d); "
+                "Arm32: %d (%d) "
+                "Arm64 guess: %d (%d)\n",
+                atk, def, hp, l, cp_simple,
+                cp_dh_combo, cp_simple - cp_dh_combo,
+                cp_factored, cp_simple - cp_factored,
+                cp_arm32, cp_simple - cp_arm32,
+                cp_arm64_guess, cp_simple - cp_arm64_guess);
+
+        return 1;
+    }
+
+    return 0;
+}
+
+
 double cp_double(double cpm, int atk, int def, int hp) {
     double cp;
 
@@ -659,9 +749,9 @@ double cp_double_2(double cpm, int atk, int def, int hp) {
     /* cp = (((float)atk * (float)cpm) * sqrtf((float)def * (float)cpm) * sqrtf((float)hp * (float)cpm)) / 10.0f; */
     /*cp = sqrt((((double)atk * cpm) * ((double)atk * cpm) * ((double)def * cpm) * ((double)hp * cpm))) / 10.0;*/
 
-    /*double a = (double)atk * cpm;
+    double a = (double)atk * cpm;
     double d = (double)def * cpm;
-    double h = (double)hp * cpm;*/
+    double h = (double)hp * cpm;
 
     double lcpm = (double)((float)cpm);
     float lcpm_f = (float)cpm;
@@ -670,9 +760,9 @@ double cp_double_2(double cpm, int atk, int def, int hp) {
     /*double lcpm = (double)(adjacent_float((float)cpm, 1));*/
 
     /* Compute each stat as a floats */
-    float a = (float)atk * lcpm_f;
-    float d = (float)def * lcpm_f;
-    float h = (float)hp * lcpm_f;
+    /* float a = (float)atk * lcpm_f; */
+    /* float d = (float)def * lcpm_f; */
+    /* float h = (float)hp * lcpm_f; */
 
     /*double a = ((double)atk * lcpm);
     double d = ((double)def * lcpm);
@@ -685,13 +775,26 @@ double cp_double_2(double cpm, int atk, int def, int hp) {
     /* cp = (a * sqrt(d * h)) / 10.0; */
     /*cp = ((double)atk * sqrt((double)(def * hp)) * lcpm * lcpm) / 10.0;*/
 
-    cp = ((double)a * sqrt((double)d) * sqrt((double)h)) / 10.0;
+    /*cp = ((double)a * sqrt((double)d) * sqrt((double)h)) / 10.0;*/
+    cp = ((double)a * sqrt((double)d * (double)h)) * 0.1;
     /*cp = (sqrt((double)(a * a * d * h))) / 10.0;*/
 
     return cp;
 }
 
 double solve_cpm_from_cp(double cp, int atk, int def, int hp) {
+
+    double x = (double)cp / 0.1;
+    /*double x = (double)cp * 10.0;*/
+    x = x / ((double)atk * sqrt((double)(def * hp)));
+
+    double cpm = (double)sqrt(x);
+
+    return cpm;
+}
+
+
+double solve_cpm_from_cp_ld(double cp, int atk, int def, int hp) {
 
     long double x = (long double)cp * 10.0L;
     x = x / ((long double)atk * sqrtl((long double)(def * hp)));
