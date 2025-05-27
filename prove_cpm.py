@@ -30,8 +30,13 @@ cpm_c_32 = FP("cpm_c_32", Float32())
 #s.add(0.09 <= cpm_c, cpm_c <= 0.9)
 
 # For a CPM approximately at level 11: 0.44310755f
-cpm_l = FPVal("0.4431074559688568115234375", Float32()) # Low -3 floats
-cpm_h = FPVal("0.4431076347827911376953125", Float32()) # High +3 floats
+#cpm_l = FPVal("0.4431074559688568115234375", Float32()) # Low -3 floats
+#cpm_h = FPVal("0.4431076347827911376953125", Float32()) # High +3 floats
+
+#Float level 11.5 low: 0.453059852123260498046875000000 (0x3ee7f776)
+#Float level 11.5 high: 0.453060030937194824218750000000 (0x3ee7f77c)
+cpm_l = FPVal("0.453059852123260498046875", Float32()) # Low -3 floats
+cpm_h = FPVal("0.45306003093719482421875", Float32()) # High +3 floats
 
 cpm_l_32 = FP("cpm_l_32", Float32())
 cpm_h_32 = FP("cpm_h_32", Float32())
@@ -94,16 +99,29 @@ atk_c_64 = fpMul(rm, cpm_c_64, atk_64)
 
 
 # We get CMP ties as floats
-s32.add(atk_a_32 == atk_c_32, atk_b_32 == atk_c_32)
+#s32.add(atk_a_32 == atk_c_32, atk_b_32 == atk_c_32)
 
 # See if cpm_a can be different than cpm_b
-s32.add(cpm_a_32 != cpm_b_32)
+#s32.add(cpm_a_32 != cpm_b_32)
+
+# a > c, a == b
+s32.add(atk_a_32 > atk_c_32, atk_a_32 == atk_b_32)
+
+# See if cpm_b can be less than or equal to cpm_c
+s32.add(cpm_b_32 <= cpm_c_32)
+
 
 # We get CMP ties as doubles
-s64.add(atk_a_64 == atk_c_64, atk_b_64 == atk_c_64)
+#s64.add(atk_a_64 == atk_c_64, atk_b_64 == atk_c_64)
 
 # See if cpm_a can be different than cpm_b
-s64.add(cpm_a_64 != cpm_b_64)
+#s64.add(cpm_a_64 != cpm_b_64)
+
+# a > c, a == b
+s64.add(atk_a_64 > atk_c_64, atk_a_64 == atk_b_64)
+
+# See if cpm_b can be less than or equal to cpm_c
+s64.add(cpm_b_64 <= cpm_c_64)
 
 res32 = s32.check()
 print(res32)
